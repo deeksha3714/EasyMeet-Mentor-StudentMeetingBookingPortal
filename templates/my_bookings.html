@@ -1,9 +1,18 @@
+
 {% extends "base.html" %}
 {% block title %}My Bookings{% endblock %}
+
 {% block head %}
 <style>
-  .status-cancelled { display:inline-block; padding:5px 9px; border-radius:20px;
-                      background:#fee2e2; color:#b42318; font-size:10px; font-weight:700; }
+  .status-cancelled {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: #fee2e2;
+      color: #b42318;
+      font-size: 10px;
+      font-weight: 700;
+  }
 </style>
 {% endblock %}
 
@@ -13,7 +22,6 @@
     <div>
         <div class="eyebrow">YOUR SCHEDULE</div>
         <h1>My bookings</h1>
-        <p>Keep track of your mentoring sessions and waitlist requests.</p>
     </div>
 
     <a href="/team/dashboard" class="btn btn-primary">
@@ -32,11 +40,8 @@
 </div>
 
 {% if bookings %}
-
 <div class="booking-list">
-
     {% for b in bookings %}
-
     <article class="booking-card">
 
         <div class="booking-date-block">
@@ -49,9 +54,13 @@
                 <h3>{{ b.mentor_name }}</h3>
 
                 {% if b.is_future %}
-                    <span class="status-badge status-available">● Confirmed</span>
+                    <span class="status-badge status-available">
+                        ● Confirmed
+                    </span>
                 {% else %}
-                    <span class="status-badge status-past">Past session</span>
+                    <span class="status-badge status-past">
+                        Past session
+                    </span>
                 {% endif %}
             </div>
 
@@ -82,13 +91,10 @@
         </div>
 
     </article>
-
     {% endfor %}
-
 </div>
 
 {% else %}
-
 <div class="empty-state">
     <div class="empty-symbol">▣</div>
     <h3>No confirmed bookings yet</h3>
@@ -97,14 +103,11 @@
         Explore mentors →
     </a>
 </div>
-
 {% endif %}
-
 
 <!-- CANCELLED BY MENTOR -->
 
 {% if cancelled %}
-
 <div class="section-heading waitlist-heading">
     <div>
         <div class="eyebrow">ACTION NEEDED</div>
@@ -116,25 +119,41 @@
 <div class="booking-list">
     {% for c in cancelled %}
     <article class="booking-card">
+
         <div class="booking-date-block">
             <span class="booking-calendar-icon">▣</span>
             <span class="booking-date">{{ c.slot_date }}</span>
         </div>
+
         <div class="booking-main">
             <div class="booking-title-row">
                 <h3>{{ c.mentor_name }}</h3>
-                <span class="status-cancelled">● {{ c.kind }} cancelled</span>
+                <span class="status-cancelled">
+                    ● {{ c.kind }} cancelled
+                </span>
             </div>
-            <div class="booking-time"><span>◷</span> {{ c.start_t }} – {{ c.end_t }}</div>
-            <p class="booking-reason"><strong>Reason:</strong> {{ c.reason or 'No reason provided' }}</p>
+
+            <div class="booking-time">
+                <span>◷</span>
+                {{ c.start_t }} – {{ c.end_t }}
+            </div>
+
+            <p class="booking-reason">
+                <strong>Reason:</strong>
+                {{ c.reason or 'No reason provided' }}
+            </p>
         </div>
+
         <div class="booking-actions">
-            <a href="/team/dashboard" class="btn btn-secondary btn-sm">Book another slot</a>
+            <a href="/team/dashboard"
+               class="btn btn-secondary btn-sm">
+                Book another slot
+            </a>
         </div>
+
     </article>
     {% endfor %}
 </div>
-
 {% endif %}
 
 <!-- WAITLIST -->
@@ -148,11 +167,8 @@
 </div>
 
 {% if waits %}
-
 <div class="booking-list">
-
     {% for w in waits %}
-
     <article class="booking-card waitlist-card">
 
         <div class="booking-date-block waitlist-date-block">
@@ -163,7 +179,9 @@
         <div class="booking-main">
             <div class="booking-title-row">
                 <h3>{{ w.mentor_name }}</h3>
-                <span class="status-badge status-waiting">● Waitlisted</span>
+                <span class="status-badge status-waiting">
+                    ● Waitlisted
+                </span>
             </div>
 
             <div class="booking-time">
@@ -182,7 +200,8 @@
                 </span>
 
                 <span class="queue-position">
-                    Queue position <strong>#{{ w.queue_pos }}</strong>
+                    Queue position
+                    <strong>#{{ w.queue_pos }}</strong>
                 </span>
             </div>
         </div>
@@ -199,19 +218,20 @@
         </div>
 
     </article>
-
     {% endfor %}
-
 </div>
 
 {% else %}
-
 <div class="empty-state compact-empty">
     <div class="empty-symbol">✓</div>
     <h3>No active waitlist requests</h3>
-    <p>When you join a waitlist, your request and queue position will appear here.</p>
+    <p>
+        When you join a waitlist, your request and queue position
+        will appear here.
+    </p>
 </div>
-
 {% endif %}
 
 {% endblock %}
+
+
