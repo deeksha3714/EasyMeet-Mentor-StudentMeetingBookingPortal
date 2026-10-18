@@ -74,11 +74,25 @@ The project demonstrates practical applications of **Operating Systems (OS)** an
 ```text
 mentor_booking_portal/
 │
-├── app.py                  # Flask application and routes
-├── db_config.py            # MySQL connection configuration
-├── schema.sql              # Database schema and table definitions
-├── requirements.txt        # Python dependencies
-├── README.md               # Project documentation
+├── app.py                      # Flask application and routes
+├── config.py                   # store common global constants
+├── test_concurrency.py
+├── routes/
+│   ├── auth.py             # Login / register
+│   ├── mentor.py           # Mentor dashboard, slot management
+│   ├── booking.py          # Booking and cancellation
+│   └── waitlist.py         # Waitlist endpoints
+├── services/
+│   ├── availability_service.py   # Slot generation and capacity
+│   ├── booking_service.py        # Locking and booking logic
+│   └── waitlist_service.py       # Queue handling and promotion
+├── database
+│   ├── schema.sql              # Database schema and table definitions
+│   ├── setup_script.sh
+│
+├── db_config.py                # MySQL connection configuration
+├── requirements.txt            # Python dependencies
+├── README.md                   # Project documentation
 │
 ├── templates/
 │   ├── base.html
@@ -90,9 +104,7 @@ mentor_booking_portal/
 │   └── my_bookings.html
 │
 ├── static/
-│   ├── css/
-│   ├── js/
-│   └── images/
+│   └── style.css
 │
 ├── tests/                  # Test cases, if configured
 └── venv/                   # Local virtual environment (not committed)
@@ -114,7 +126,7 @@ Install the following before running the application:
 ### Step 1: Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone git@github.com:deeksha3714/EasyMeet-Mentor-StudentMeetingBookingPortal.git
 cd mentor_booking_portal
 ```
 
@@ -136,12 +148,6 @@ venv\Scripts\activate
 ```
 
 ### Step 3: Install Dependencies
-
-```bash
-pip install Flask mysql-connector-python
-```
-
-If your project has a `requirements.txt` file, use:
 
 ```bash
 pip install -r requirements.txt
@@ -208,32 +214,10 @@ This project is developed collaboratively by four team members.
 |---|---|
 | Deeksha | Database schema, MySQL integration, booking transactions, slot locking, and team dashboard integration |
 | Lavanya | Authentication, sessions, role-based access, shared UI layout, styling, and status interface |
-| Aditya | Mentor availability, automatic slot generation, overlap detection, and concurrency testing |
+| Aditya | Mentor availability, slot generation, overlap detection, and concurrency testing |
 | Aryan | Waiting-list management, FCFS and priority scheduling, aging, queue positions, cancellation, auto-promotion, and My Bookings interface |
 
 All members should coordinate changes to shared files, especially `app.py`, database schema files, and shared templates.
-
-## Git Collaboration Workflow
-
-Each team member should create a separate feature branch and commit their own changes.
-
-```bash
-git checkout main
-git pull origin main
-git checkout -b feature/waitlist-management
-```
-
-Stage only the files related to your work and commit:
-
-```bash
-git add <relevant-files>
-git commit -m "Implement waiting-list management"
-git push -u origin feature/waitlist-management
-```
-
-Then open a Pull Request on GitHub and merge the changes into `main` after review.
-
-**Important:** Do not commit your virtual environment, passwords, database credentials, or local configuration containing secrets.
 
 ## Future Enhancements
 
@@ -254,7 +238,3 @@ This project provides practical experience with:
 - Scheduling algorithms and starvation prevention.
 - Git-based collaborative development.
 - Integrating OS and DBMS concepts into a working application.
-
-## License
-
-This project was developed for academic and educational purposes. Add a suitable open-source license if you intend to distribute it publicly.
