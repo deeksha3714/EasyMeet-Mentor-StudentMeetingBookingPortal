@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Mentor Dashboard{% endblock %}
+
+{% block content %}
+  <h2>Welcome, {{ session.name }}</h2>
+  <p class="sub">Manage your availability, track bookings, and plan upcoming meetings.</p>
+
+  {% set n_booked = slots|selectattr('status','equalto','booked')|list|length %}
+  {% set n_cancelled = slots|selectattr('status','equalto','cancelled')|list|length %}
+  <div class="stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+    <div class="stat">
+      <div class="num">{{ slots|length }}</div>
+      <div class="lbl">Total slots</div>
+    </div>
+    <div class="stat">
+      <div class="num">{{ n_booked }}</div>
+      <div class="lbl">Booked</div>
+    </div>
+    <div class="stat">
+      <div class="num">{{ slots|length - n_booked - n_cancelled }}</div>
+      <div class="lbl">Available</div>
+    </div>
+    <div class="stat">
+      <div class="num">{{ n_cancelled }}</div>
+      <div class="lbl">Cancelled</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Waitlist scheduling policy</h3>
+    <p class="muted">
+      Active: <span class="badge pill-blue">{{ policy }}</span>
+      &nbsp; FCFS serves the earliest request. Priority + Aging serves the highest score.
+    </p>
+    <div class="form-row" style="margin-top:12px">
+      <form method="POST" action="/mentor/policy/FCFS">
+        <button class="btn {{ 'btn-ghost' if policy != 'FCFS' }} btn-sm" type="submit">FCFS</button>
+      </form>
+      <form method="POST" action="/mentor/policy/PRIORITY">
+        <button class="btn {{ 'btn-ghost' if policy != 'PRIORITY' }} btn-sm" type="submit">Priority + Aging</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Allocate availability</h3>
+    <p class="muted">Click a date in the calendar to fill the date field, then choose your hours.</p>
+    <form id="availability-form" method="POST" action="/mentor/add_availability">
+      <div class="form-row">
+        <div>
+          <label for="availability-date">Date</label>
+          <input id="availability-date" type="date" name="date" min="{{ today }}" required>
+        </div>
+        <div>
+          <label for="free-from">From</label>
+          <input id="free-from" type="time" name="free_from" value="09:00" required>
+        </div>
+        <div>
+          <label for="free-to">To</label>
+          <input id="free-to" type="time" name="free_to" value="12:00" required>
+        </div>
+        <div>
+          <label for="duration">Duration (min)</label>
+          <input id="duration" type="number" name="duration" value="15" min="5" max="120" required>
+        </div>
+        <div style="flex:0 0 auto">
+          <button type="submit">Generate slots</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Cancel Meetings for a Whole Week</h3>
+    <p class="muted">Cancels every upcoming slot on the chosen date. Teams that already booked will see
+      it under "Cancelled by mentor" in their My Bookings page.</p>
+    <form method="POST" action="/mentor/cancel_day"
+          onsubmit="return confirm('Cancel ALL upcoming slots on this date? Booked teams will be affected.');">
+      <div class="form-row">
+        <div>
+          <label for="cancel-date">Date</label>
+          <input id="cancel-date" type="date" name="date" min="{{ today }}" required>
+        </div>
+        <div style="flex:0 0 auto">
+          <button class="btn btn-danger" type="submit">Cancel all slots on this date</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card calendar-card">
+    <h3>My calendar</h3>
+    <div class="calendar-legend">
+      <span><i class="legend-dot" style="background:#16a34a"></i>Available</span>
+      <span><i class="legend-dot" style="background:#dc2626"></i>Booked</span>
+      <span><i class="legend-dot" style="background:#6b7280"></i>Cancelled</span>
+    </div>
+    <p class="calendar-hint">Select a date to allocate new slots. Select an existing event to view its details.</p>
+    <div id="mentor-calendar"></div>
+  </div>
+
+  <h3>My slots</h3>
+  {% if slots %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Start</th><th>End</th><th>Status</th>
+          <th>Booked by</th><th>Reason</th><th>Waiting</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in slots %}
+        <tr>
+          <td>{{ s.slot_date }}</td>
+          <td>{{ s.start_t }}</td>
+          <td>{{ s.end_t }}</td>
+          <td><span class="badge {{ s.status }}">{{ s.status }}</span></td>
+          <td>{{ s.team_name or '-' }}</td>
+          <td>{{ s.reason or '-' }}</td>
+          <td>{{ s.waiting_count }}</td>
+          <td>
+            {% if s.status != 'cancelled' and s.is_future %}
+            {% set confirm_msg = ('This slot is booked by ' ~ s.team_name ~ '. Cancel it anyway?')
+                                 if s.status == 'booked' else 'Cancel this slot?' %}
+            <form method="POST"
+                  action="/mentor/cancel_slot/{{ s.slot_id }}"
+                  onsubmit="return confirm(this.dataset.message)"
+                  data-message="{{ confirm_msg }}">
+              <button class="btn btn-danger btn-sm" type="submit">
+                Cancel slot
+              </button>
+            </form>
+            {% else %}-{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">No slots yet. Use the form above or click a date in the calendar to create some.</div>
+  {% endif %}
+{% endblock %}
+
+{% block head %}
+  <meta name="description" content="Manage mentor availability and meetings on a calendar.">
+  <style>.badge.cancelled { background:#6b7280; color:#fff; }</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const calendarEl = document.getElementById("mentor-calendar");
+  if (!calendarEl || !window.FullCalendar) return;
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: "dayGridMonth",
+    height: "auto",
+    fixedWeekCount: false,
+    dayMaxEvents: 3,
+    headerToolbar: {
+      left: "prev,next today",
+      center: "title",
+      right: "dayGridMonth,timeGridWeek,listMonth"
+    },
+    events: "/api/mentor/calendar-events",
+    dateClick: function (info) {
+      const dateInput = document.getElementById("availability-date");
+      dateInput.value = info.dateStr.slice(0, 10);
+      dateInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      dateInput.focus();
+    },
+    eventClick: function (info) {
+      const p = info.event.extendedProps;
+      const status = p.status === "available" ? "Available"
+                   : (p.status === "cancelled" ? "Cancelled" : "Booked");
+      let details = status + "\nTime: " + p.startTime + "–" + p.endTime;
+      if (p.teamName) details += "\nTeam: " + p.teamName;
+      if (p.reason) details += "\nReason: " + p.reason;
+      alert(details);
+    }
+  });
+
+  calendar.render();
+});
+</script>
+{% endblock %}
+
