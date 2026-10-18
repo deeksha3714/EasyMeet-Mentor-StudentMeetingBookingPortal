@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}My Bookings{% endblock %}
+{% block head %}
+<style>
+  .status-cancelled { display:inline-block; padding:5px 9px; border-radius:20px;
+                      background:#fee2e2; color:#b42318; font-size:10px; font-weight:700; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">YOUR SCHEDULE</div>
+        <h1>My bookings</h1>
+        <p>Keep track of your mentoring sessions and waitlist requests.</p>
+    </div>
+
+    <a href="/team/dashboard" class="btn btn-primary">
+        Find a mentor →
+    </a>
+</div>
+
+<!-- CONFIRMED BOOKINGS -->
+
+<div class="section-heading">
+    <div>
+        <div class="eyebrow">CONFIRMED</div>
+        <h2>Upcoming sessions</h2>
+    </div>
+    <span class="badge">{{ bookings|length }} bookings</span>
+</div>
+
+{% if bookings %}
+
+<div class="booking-list">
+
+    {% for b in bookings %}
+
+    <article class="booking-card">
+
+        <div class="booking-date-block">
+            <span class="booking-calendar-icon">▣</span>
+            <span class="booking-date">{{ b.slot_date }}</span>
+        </div>
+
+        <div class="booking-main">
+            <div class="booking-title-row">
+                <h3>{{ b.mentor_name }}</h3>
+
+                {% if b.is_future %}
+                    <span class="status-badge status-available">● Confirmed</span>
+                {% else %}
+                    <span class="status-badge status-past">Past session</span>
+                {% endif %}
+            </div>
+
+            <div class="booking-time">
+                <span>◷</span>
+                {{ b.start_t }} – {{ b.end_t }}
+            </div>
+
+            <p class="booking-reason">
+                <strong>Reason:</strong>
+                {{ b.reason or 'No reason provided' }}
+            </p>
+        </div>
+
+        <div class="booking-actions">
+            {% if b.is_future %}
+                <form method="POST"
+                      action="/team/cancel/{{ b.booking_id }}"
+                      onsubmit="return confirm('Cancel this booking?');">
+
+                    <button class="btn btn-danger btn-sm" type="submit">
+                        Cancel booking
+                    </button>
+                </form>
+            {% else %}
+                <span class="muted">Completed / past</span>
+            {% endif %}
+        </div>
+
+    </article>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="empty-state">
+    <div class="empty-symbol">▣</div>
+    <h3>No confirmed bookings yet</h3>
+    <p>Your confirmed mentoring sessions will appear here.</p>
+    <a href="/team/dashboard" class="btn btn-primary">
+        Explore mentors →
+    </a>
+</div>
+
+{% endif %}
+
+
+<!-- CANCELLED BY MENTOR -->
+
+{% if cancelled %}
+
+<div class="section-heading waitlist-heading">
+    <div>
+        <div class="eyebrow">ACTION NEEDED</div>
+        <h2>Cancelled by mentor</h2>
+    </div>
+    <span class="badge">{{ cancelled|length }} cancelled</span>
+</div>
+
+<div class="booking-list">
+    {% for c in cancelled %}
+    <article class="booking-card">
+        <div class="booking-date-block">
+            <span class="booking-calendar-icon">▣</span>
+            <span class="booking-date">{{ c.slot_date }}</span>
+        </div>
+        <div class="booking-main">
+            <div class="booking-title-row">
+                <h3>{{ c.mentor_name }}</h3>
+                <span class="status-cancelled">● {{ c.kind }} cancelled</span>
+            </div>
+            <div class="booking-time"><span>◷</span> {{ c.start_t }} – {{ c.end_t }}</div>
+            <p class="booking-reason"><strong>Reason:</strong> {{ c.reason or 'No reason provided' }}</p>
+        </div>
+        <div class="booking-actions">
+            <a href="/team/dashboard" class="btn btn-secondary btn-sm">Book another slot</a>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% endif %}
+
+<!-- WAITLIST -->
+
+<div class="section-heading waitlist-heading">
+    <div>
+        <div class="eyebrow">WAITING FOR A SLOT</div>
+        <h2>My waitlist</h2>
+    </div>
+    <span class="badge">{{ waits|length }} requests</span>
+</div>
+
+{% if waits %}
+
+<div class="booking-list">
+
+    {% for w in waits %}
+
+    <article class="booking-card waitlist-card">
+
+        <div class="booking-date-block waitlist-date-block">
+            <span class="booking-calendar-icon">◷</span>
+            <span class="booking-date">{{ w.slot_date }}</span>
+        </div>
+
+        <div class="booking-main">
+            <div class="booking-title-row">
+                <h3>{{ w.mentor_name }}</h3>
+                <span class="status-badge status-waiting">● Waitlisted</span>
+            </div>
+
+            <div class="booking-time">
+                <span>◷</span>
+                {{ w.start_t }} – {{ w.end_t }}
+            </div>
+
+            <p class="booking-reason">
+                <strong>Reason:</strong>
+                {{ w.reason or 'No reason provided' }}
+            </p>
+
+            <div class="waitlist-details">
+                <span class="badge pill-blue">
+                    {{ w.priority_label }}
+                </span>
+
+                <span class="queue-position">
+                    Queue position <strong>#{{ w.queue_pos }}</strong>
+                </span>
+            </div>
+        </div>
+
+        <div class="booking-actions">
+            <form method="POST"
+                  action="/team/leave_waitlist/{{ w.waitlist_id }}"
+                  onsubmit="return confirm('Leave this waitlist?');">
+
+                <button class="btn btn-secondary btn-sm" type="submit">
+                    Leave waitlist
+                </button>
+            </form>
+        </div>
+
+    </article>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="empty-state compact-empty">
+    <div class="empty-symbol">✓</div>
+    <h3>No active waitlist requests</h3>
+    <p>When you join a waitlist, your request and queue position will appear here.</p>
+</div>
+
+{% endif %}
+
+{% endblock %}
