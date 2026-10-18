@@ -1,0 +1,32 @@
+
+{% extends "base.html" %}
+{% block title %}Team Dashboard{% endblock %}
+
+{% block content %}
+  <h2>Welcome, {{ session.name }}</h2>
+  <p class="sub">Choose a mentor to view their calendar and book an available time.</p>
+
+  {% if mentors %}
+  <div class="grid">
+    {% for m in mentors %}
+    <div class="card mentor-card" style="margin:0">
+      <div class="avatar">{{ m.name[0]|upper }}</div>
+      <div>
+        <b>{{ m.name }}</b><br>
+        <span class="muted">{{ m.department or 'Department not set' }}</span>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="/team/mentor/{{ m.mentor_id }}">Open calendar</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="empty">No mentors registered yet.</div>
+  {% endif %}
+{% endblock %}
+
+
+
+
+
+
+
