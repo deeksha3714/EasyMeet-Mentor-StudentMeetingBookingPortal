@@ -1,0 +1,114 @@
+
+{% extends "base.html" %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+
+    <section class="auth-hero">
+        <div class="eyebrow">WELCOME TO MENTORLY</div>
+
+        <h1>Your growth starts with the right connection.</h1>
+
+        <p>
+            Build meaningful connections, share knowledge,
+            and make every mentoring session count.
+        </p>
+
+        <div class="auth-benefits">
+            <div class="auth-benefit">
+                <span class="benefit-icon">✓</span>
+                <span>Easy account registration</span>
+            </div>
+
+            <div class="auth-benefit">
+                <span class="benefit-icon">✓</span>
+                <span>Organized mentoring sessions</span>
+            </div>
+
+            <div class="auth-benefit">
+                <span class="benefit-icon">✓</span>
+                <span>Smart waitlist management</span>
+            </div>
+        </div>
+
+        <div class="hero-decoration hero-decoration-one"></div>
+        <div class="hero-decoration hero-decoration-two"></div>
+    </section>
+
+    <section class="auth-form-side">
+        <div class="form-card auth-card">
+
+            <div class="auth-icon">✦</div>
+
+            <div class="form-intro">
+                <h1>Create account</h1>
+                <p>Enter your details to get started.</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('register') }}">
+
+                <div class="form-group">
+                    <label for="name">Full name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Enter your full name"
+                        autocomplete="name"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Create a password"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Register as</label>
+                    <select id="role" name="role" required>
+                        <option value="" disabled selected>
+                            Choose your account type
+                        </option>
+                        <option value="team">Student Team</option>
+                        <option value="mentor">Mentor</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    Create account <span aria-hidden="true">→</span>
+                </button>
+
+            </form>
+
+            <p class="form-note">
+                Already have an account?
+                <a href="{{ url_for('login') }}"><strong>Sign in</strong></a>
+            </p>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}
