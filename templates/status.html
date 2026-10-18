@@ -1,0 +1,220 @@
+
+{% extends "base.html" %}
+{% block title %}Live Status{% endblock %}
+
+{% block head %}
+<meta http-equiv="refresh" content="5">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">SYSTEM MONITOR</div>
+        <h1>Live system status</h1>
+        <p>Monitor slot availability, confirmed bookings, and waitlist priority.</p>
+    </div>
+
+    <div class="live-indicator">
+        <span class="live-dot"></span>
+        Live updates
+    </div>
+</div>
+
+<div class="status-info-bar">
+    <div class="status-info-item">
+        <span class="info-label">Booking policy</span>
+        <span class="badge pill-blue">{{ policy }}</span>
+    </div>
+
+    <div class="status-info-divider"></div>
+
+    <div class="status-info-item">
+        <span class="info-label">Priority aging</span>
+        <strong>+1 score / {{ aging_seconds }} sec</strong>
+    </div>
+
+    <div class="status-info-divider"></div>
+
+    <div class="status-info-item">
+        <span class="info-label">Auto refresh</span>
+        <strong>Every 5 seconds</strong>
+    </div>
+</div>
+
+<!-- OVERVIEW -->
+
+<div class="stats status-stats">
+
+    <div class="stat status-stat">
+        <div class="status-stat-icon icon-indigo">▦</div>
+        <div>
+            <div class="num">{{ total }}</div>
+            <div class="lbl">Total slots</div>
+        </div>
+    </div>
+
+    <div class="stat status-stat">
+        <div class="status-stat-icon icon-green">✓</div>
+        <div>
+            <div class="num">{{ booked }}</div>
+            <div class="lbl">Booked slots</div>
+        </div>
+    </div>
+
+    <div class="stat status-stat">
+        <div class="status-stat-icon icon-blue">◷</div>
+        <div>
+            <div class="num">{{ available }}</div>
+            <div class="lbl">Available slots</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ALL SLOTS -->
+
+<div class="section-heading">
+    <div>
+        <div class="eyebrow">AVAILABILITY OVERVIEW</div>
+        <h2>All mentor slots</h2>
+    </div>
+    <span class="badge">{{ slots|length }} records</span>
+</div>
+
+<div class="card status-table-card">
+
+    {% if slots %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Slot</th>
+                    <th>Mentor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Held by</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for s in slots %}
+                <tr>
+                    <td><span class="id-label">#{{ s.slot_id }}</span></td>
+
+                    <td><strong>{{ s.mentor_name }}</strong></td>
+
+                    <td>{{ s.slot_date }}</td>
+
+                    <td class="status-time">
+                        {{ s.start_t }} – {{ s.end_t }}
+                    </td>
+
+                    <td>
+                        {% if s.status == 'available' %}
+                            <span class="status-badge status-available">● Available</span>
+                        {% elif s.status == 'booked' %}
+                            <span class="status-badge status-booked">● Booked</span>
+                        {% else %}
+                            <span class="badge">{{ s.status }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>{{ s.holder or '—' }}</td>
+
+                    <td class="reason-cell">{{ s.reason or '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="empty-state compact-empty">
+        <div class="empty-symbol">▦</div>
+        <h3>No slots available to display</h3>
+        <p>Slots will appear here once mentors add their availability.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- WAITLIST -->
+
+<div class="section-heading waitlist-heading">
+    <div>
+        <div class="eyebrow">QUEUE MANAGEMENT</div>
+        <h2>Waitlist priority</h2>
+        <p>Service order under the {{ policy }} policy.</p>
+    </div>
+
+    <span class="badge">{{ waits|length }} waiting</span>
+</div>
+
+<div class="card status-table-card">
+
+    {% if waits %}
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Slot</th>
+                    <th>Team</th>
+                    <th>Priority</th>
+                    <th>Requested at</th>
+                    <th>Score</th>
+                    <th>Queue position</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for w in waits %}
+                <tr>
+                    <td><span class="id-label">#{{ w.slot_id }}</span></td>
+
+                    <td><strong>{{ w.team_name }}</strong></td>
+
+                    <td>
+                        <span class="badge pill-blue">
+                            {{ w.priority_label }}
+                        </span>
+                    </td>
+
+                    <td>{{ w.requested_at }}</td>
+
+                    <td><span class="score-label">{{ w.score }}</span></td>
+
+                    <td>
+                        {% if w.queue_pos == 1 %}
+                            <span class="queue-first">#{{ w.queue_pos }} · Next</span>
+                        {% else %}
+                            <span class="badge pill-amber">#{{ w.queue_pos }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+    <div class="empty-state compact-empty">
+        <div class="empty-symbol">✓</div>
+        <h3>Nobody is waiting</h3>
+        <p>There are currently no active waitlist requests.</p>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<p class="status-footer-note">
+    <span class="live-dot"></span>
+    Data refreshes automatically every 5 seconds.
+</p>
+
+{% endblock %}
