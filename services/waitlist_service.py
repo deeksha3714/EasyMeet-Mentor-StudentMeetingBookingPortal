@@ -2,14 +2,14 @@
 """Waiting queue: scheduling policy (FCFS / Priority + Aging), ranking,
 joining and leaving the waitlist."""
 
-import mysql.connector
+import  mysql.connector
 
 from config import AGING_SECONDS, DEFAULT_POLICY, WAIT_COLS
 from db_config import get_db_connection
 from utils import query_all
 
 
-VALID_POLICIES = ("FCFS", "PRIORITY")
+VALID_POLICIES =  ("FCFS", "PRIORITY")
 _policy = DEFAULT_POLICY
 
 
@@ -48,7 +48,7 @@ def rank_key(r):
     return (-score(r), r["request_time"], r["waitlist_id"])
 
 
-def ranked_queues(extra_where="", params=()):
+def  ranked_queues(extra_where="", params=()):
     """Return {slot_id: [waiting rows in service order]}."""
     rows = query_all(
         WAIT_COLS + " WHERE w.status = 'waiting' " + extra_where,
@@ -64,7 +64,7 @@ def ranked_queues(extra_where="", params=()):
     return queues
 
 
-def queue_positions():
+def  queue_positions():
     """Return {waitlist_id: position in its slot's queue}."""
     positions = {}
 
