@@ -3,13 +3,13 @@ Program Constants.
 """
 import os
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "change-this-to-any-long-random-string")
+SECRET_KEY = os.environ.get("SECRET_KEY", "easymeet_booking_system")
 
 DEMO_DELAY = 0
 
 # ---------- scheduling policy ----------
 DEFAULT_POLICY = "PRIORITY"  
-AGING_SECONDS = 60            
+AGING_SECONDS = 3600            
 PRIORITY_LABELS = {3: "Urgent", 2: "Review", 1: "General"}
 URGENCY_TAG = {3: "urgent", 2: "review", 1: "general"}
 
