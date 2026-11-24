@@ -24,8 +24,10 @@ def waitlist(slot_id):
         "past": "This slot is in the past.",
         "cancelled": "This slot was cancelled by the mentor.",
         "not_found": "Slot not found.",
+        "already_booked": "Your team already has an active booking. You cannot waitlist multiple slots.",
+        "wrong_mentor": "You can only book slots with your assigned mentor.",
         "error": "Something went wrong. You were not added.",
-    }[result])
+    }.get(result, "Something went wrong. You were not added."))
     if mentor_id:
         return redirect(url_for("view_mentor_slots", mentor_id=mentor_id))
     return redirect(url_for("team_dashboard"))
