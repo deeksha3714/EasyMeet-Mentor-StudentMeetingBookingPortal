@@ -2,7 +2,8 @@
 from flask import flash, jsonify, redirect, render_template, request, session, url_for
 
 from services.availability_service import (
-    get_all_mentors, get_mentor, get_mentor_slots_for_team, get_team_calendar_events)
+    get_all_mentors, get_mentor, get_mentor_slots_for_team,
+    get_team_assigned_mentor, get_team_calendar_events)
 from services.booking_service import (
     book_slot, cancel_booking, get_status_snapshot, get_team_bookings)
 from utils import login_required
@@ -10,7 +11,13 @@ from utils import login_required
 
 @login_required("team")
 def team_dashboard():
-    return render_template("team_dashboard.html", mentors=get_all_mentors())
+    mentors = get_all_mentors()
+    assigned_mentor_id = get_team_assigned_mentor(session["user_id"])
+    return render_template(
+        "team_dashboard.html",
+        mentors=mentors,
+        assigned_mentor_id=assigned_mentor_id
+    )
 
 
 @login_required("team")
@@ -24,6 +31,7 @@ def team_mentor_calendar_events(mentor_id):
 
 @login_required("team")
 def view_mentor_slots(mentor_id):
+    assigned_mentor_id = get_team_assigned_mentor(session["user_id"])
     mentor = get_mentor(mentor_id)
     if not mentor:
         flash("Mentor not found.")
@@ -31,8 +39,13 @@ def view_mentor_slots(mentor_id):
 
     my_team = session["user_id"]
     slots = get_mentor_slots_for_team(mentor_id, my_team)
-    return render_template("mentor_slots.html", mentor=mentor,
-                           slots=slots, my_team_id=my_team)
+    return render_template(
+        "mentor_slots.html",
+        mentor=mentor,
+        slots=slots,
+        my_team_id=my_team,
+        assigned_mentor_id=assigned_mentor_id
+    )
 
 
 @login_required("team")
@@ -45,8 +58,10 @@ def book(slot_id):
         "past": "This slot is in the past and cannot be booked.",
         "cancelled": "This slot was cancelled by the mentor.",
         "not_found": "Slot not found.",
+        "already_booked": "Your team already has an active booking. You cannot book multiple slots.",
+        "wrong_mentor": "You can only book slots with your assigned mentor.",
         "error": "Something went wrong. Nothing was booked.",
-    }[result])
+    }.get(result, "Something went wrong. Nothing was booked."))
     if mentor_id:
         return redirect(url_for("view_mentor_slots", mentor_id=mentor_id))
     return redirect(url_for("team_dashboard"))
@@ -68,7 +83,7 @@ def cancel(booking_id):
         "past": "Past bookings cannot be cancelled.",
         "not_found": "Booking not found.",
         "error": "Something went wrong. Nothing was changed.",
-    }[result])
+    }.get(result, "Something went wrong. Nothing was changed."))
     return redirect(url_for("my_bookings"))
 
 
