@@ -1,237 +1,1103 @@
 
 {% extends "base.html" %}
-{% block title %}My Bookings{% endblock %}
+
+{% block title %}My Bookings | MentorMeet{% endblock %}
 
 {% block head %}
 <style>
-  .status-cancelled {
-      display:   inline-block;
-      padding:   5px 9px;
-      border-radius:   20px;
-      background:   #fee2e2;
-      color:   #b42318;
-      font-size:  10px;
-      font-weight:  700;
-  }
+    .bookings-page {
+        display: grid;
+        gap: 23px;
+    }
+
+    [data-theme="dark"] .bookings-page {
+        color: var(--ink);
+    }
+
+    [data-theme="dark"] .booking-stat,
+    [data-theme="dark"] .booking-section,
+    [data-theme="dark"] .booking-card {
+        background: var(--surface);
+        border-color: var(--line);
+    }
+
+    [data-theme="dark"] .stat-number,
+    [data-theme="dark"] .section-heading h2,
+    [data-theme="dark"] .booking-main h3 {
+        color: var(--ink);
+    }
+
+    [data-theme="dark"] .icon-blue { background: var(--blue-soft); color: var(--blue); }
+    [data-theme="dark"] .icon-green { background: #133827; color: #43c99a; }
+    [data-theme="dark"] .icon-amber { background: #332610; color: #f5c76b; }
+
+    [data-theme="dark"] .hero-action {
+        background: var(--surface);
+        color: var(--blue);
+    }
+
+    [data-theme="dark"] .booking-count {
+        background: var(--blue-soft);
+        color: var(--blue);
+    }
+
+    .booking-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 28px;
+        border-radius: 20px;
+        color: white;
+        background: linear-gradient(120deg, #172747, #3157d5);
+        box-shadow: 0 12px 30px rgba(34,55,110,.14);
+    }
+
+    .booking-hero::after {
+        content: "";
+        position: absolute;
+        width: 210px;
+        height: 210px;
+        right: -65px;
+        top: -100px;
+        border: 1px solid #ffffff25;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .hero-label {
+        color: #cbd8ff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.6px;
+    }
+
+    .booking-hero h1 {
+        margin: 9px 0;
+        font-size: clamp(25px, 4vw, 35px);
+        letter-spacing: -.8px;
+    }
+
+    .booking-hero p {
+        margin: 0;
+        color: #dce5ff;
+        font-size: 13px;
+    }
+
+    .hero-action {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        margin-top: 19px;
+        padding: 10px 15px;
+        border-radius: 9px;
+        background: white;
+        color: #3157d5;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: transform .2s;
+    }
+
+    .hero-action:hover {
+        transform: translateY(-2px);
+        color: #2446bb;
+    }
+
+    .booking-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .booking-stat {
+        padding: 19px;
+        border: 1px solid #e7eaf1;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 5px 20px rgba(25,40,75,.04);
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .booking-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(25,40,75,.09);
+    }
+
+    .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .stat-icon {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        font-size: 19px;
+    }
+
+    .icon-blue { background: #e8efff; color: #3157d5; }
+    .icon-green { background: #e4f8ed; color: #16834a; }
+    .icon-amber { background: #fff3dc; color: #a16a00; }
+
+    .stat-number {
+        font-size: 30px;
+        font-weight: 850;
+        letter-spacing: -1px;
+        color: #202b43;
+    }
+
+    .stat-label {
+        color: #778197;
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .booking-section {
+        padding: 22px;
+        border: 1px solid #e7eaf1;
+        border-radius: 17px;
+        background: white;
+        box-shadow: 0 5px 20px rgba(25,40,75,.045);
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .section-heading h2 {
+        margin: 0;
+        color: #202b43;
+        font-size: 20px;
+    }
+
+    .section-heading p {
+        margin: 5px 0 0;
+        color: #778197;
+        font-size: 12px;
+    }
+
+    .section-label {
+        margin-bottom: 5px;
+        color: #3157d5;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.3px;
+    }
+
+    .booking-count {
+        padding: 7px 11px;
+        border-radius: 30px;
+        background: #eef2ff;
+        color: #3157d5;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .booking-list {
+        display: grid;
+        gap: 13px;
+    }
+
+    .booking-card {
+        display: grid;
+        grid-template-columns: 105px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 17px;
+        padding: 17px;
+        border: 1px solid #e8ebf2;
+        border-radius: 14px;
+        background: white;
+        transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+
+    .booking-card:hover {
+        transform: translateY(-3px);
+        border-color: #ccd7ff;
+        box-shadow: 0 10px 24px rgba(35,55,100,.075);
+    }
+
+    .booking-date-block {
+        display: grid;
+        justify-items: center;
+        gap: 7px;
+        padding: 15px 9px;
+        border-radius: 12px;
+        background: #eef2ff;
+        color: #3157d5;
+        text-align: center;
+    }
+
+    .booking-date-icon {
+        font-size: 21px;
+    }
+
+    .booking-date {
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .booking-main {
+        min-width: 0;
+    }
+
+    .booking-title-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 9px;
+    }
+
+    .booking-title-row h3 {
+        margin: 0;
+        color: #202b43;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 9px;
+        border-radius: 30px;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .status-confirmed {
+        background: #e6f8ee;
+        color: #087443;
+    }
+
+    .status-past {
+        background: #f0f1f3;
+        color: #667085;
+    }
+
+    .status-waiting {
+        background: #fff3dc;
+        color: #946200;
+    }
+
+    .status-cancelled {
+        background: #ffeded;
+        color: #b42318;
+    }
+
+    .booking-time {
+        margin-bottom: 8px;
+        color: #485570;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .booking-reason {
+        margin: 0;
+        color: #778197;
+        font-size: 12px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .booking-reason strong {
+        color: #59657b;
+    }
+
+    .booking-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    .booking-actions form {
+        margin: 0;
+    }
+
+    .waitlist-card .booking-date-block {
+        background: #fff3dc;
+        color: #946200;
+    }
+
+    .cancelled-card .booking-date-block {
+        background: #ffeded;
+        color: #b42318;
+    }
+
+    .waitlist-details {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .priority-label {
+        padding: 6px 10px;
+        border-radius: 30px;
+        background: #eef2ff;
+        color: #3157d5;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .queue-position {
+        color: #946200;
+        font-size: 11px;
+        font-weight: 750;
+    }
+
+    .queue-position strong {
+        font-size: 14px;
+    }
+
+    .booking-search-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 17px;
+    }
+
+    .booking-search {
+        flex: 1 1 230px;
+    }
+
+    .booking-search input {
+        width: 100%;
+    }
+
+    .booking-filter {
+        flex: 0 1 180px;
+    }
+
+    .booking-filter select {
+        width: 100%;
+    }
+
+    .search-result-count {
+        align-self: center;
+        margin-left: auto;
+        color: #778197;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .booking-hidden {
+        display: none !important;
+    }
+
+    .empty-state {
+        padding: 37px 18px;
+        border: 1px dashed #d6dbe6;
+        border-radius: 14px;
+        background: #fafbff;
+        text-align: center;
+    }
+
+    .empty-icon {
+        display: grid;
+        place-items: center;
+        width: 55px;
+        height: 55px;
+        margin: 0 auto 13px;
+        border-radius: 15px;
+        background: #eef2ff;
+        color: #3157d5;
+        font-size: 24px;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 7px;
+        color: #202b43;
+        font-size: 16px;
+    }
+
+    .empty-state p {
+        margin: 0 0 15px;
+        color: #778197;
+        font-size: 12px;
+    }
+
+    .empty-search {
+        display: none;
+        padding: 25px;
+        border-radius: 12px;
+        background: #fafbff;
+        text-align: center;
+        color: #778197;
+        font-size: 12px;
+    }
+
+    .section-divider {
+        height: 1px;
+        margin: 3px 0;
+        background: #edf0f5;
+    }
+
+    .page-footer {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        color: #8490a6;
+        font-size: 11px;
+    }
+
+    @media(max-width: 800px) {
+        .booking-card {
+            grid-template-columns: 80px minmax(0, 1fr);
+        }
+
+        .booking-actions {
+            grid-column: 2;
+            align-items: flex-start;
+        }
+    }
+
+    @media(max-width: 600px) {
+        .booking-section {
+            padding: 15px;
+        }
+
+        .booking-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-card {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .booking-date-block {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+        }
+
+        .booking-actions {
+            grid-column: auto;
+            align-items: stretch;
+        }
+
+        .booking-actions button {
+            width: 100%;
+        }
+
+        .booking-filter {
+            flex: 1 1 100%;
+        }
+    }
 </style>
 {% endblock %}
 
+
 {% block content %}
 
-<div class="page-header">
-    <div>
-        <div class="eyebrow">YOUR SCHEDULE</div>
+{% set total_active = bookings|length + waits|length %}
+{% set future_count = bookings|selectattr('is_future')|list|length %}
+
+<div class="bookings-page">
+
+    <!-- HERO -->
+    <section class="booking-hero">
+
+        <div class="hero-label">TEAM WORKSPACE</div>
+
         <h1>My bookings</h1>
-    </div>
 
-    <a href="/team/dashboard" class="btn btn-primary">
-        Find a mentor →
-    </a>
-</div>
+        <p>
+            Your mentoring sessions, waitlist requests and booking updates,
+            all in one place.
+        </p>
 
-<!-- CONFIRMED BOOKINGS -->
+        <a href="/team/dashboard" class="hero-action">
+            + Find a mentor
+        </a>
 
-<div class="section-heading">
-    <div>
-        <div class="eyebrow">CONFIRMED</div>
-        <h2>Upcoming sessions</h2>
-    </div>
-    <span class="badge">{{ bookings|length }} bookings</span>
-</div>
+    </section>
 
-{% if bookings %}
-<div class="booking-list">
-    {% for b in bookings %}
-    <article class="booking-card">
 
-        <div class="booking-date-block">
-            <span class="booking-calendar-icon">▣</span>
-            <span class="booking-date">{{ b.slot_date }}</span>
-        </div>
+    <!-- STATISTICS -->
+    <section class="booking-stats">
 
-        <div class="booking-main">
-            <div class="booking-title-row">
-                <h3>{{ b.mentor_name }}</h3>
-
-                {% if b.is_future %}
-                    <span class="status-badge status-available">
-                        ● Confirmed
-                    </span>
-                {% else %}
-                    <span class="status-badge status-past">
-                        Past session
-                    </span>
-                {% endif %}
+        <div class="booking-stat">
+            <div class="stat-top">
+                <div class="stat-icon icon-blue">▦</div>
+                <span class="booking-count">All active</span>
             </div>
 
-            <div class= "booking-time">
-                <span>◷</span>
-                {{ b.start_t }} – {{ b.end_t }}
+            <div class="stat-number">{{ total_active }}</div>
+            <div class="stat-label">Active requests and bookings</div>
+        </div>
+
+        <div class="booking-stat">
+            <div class="stat-top">
+                <div class="stat-icon icon-green">✓</div>
+                <span class="booking-count">Confirmed</span>
             </div>
 
-            <p class="booking-reason">
-                <strong>Reason:</strong>
-                {{ b.reason or 'No reason provided' }}
-            </p>
+            <div class="stat-number">{{ future_count }}</div>
+            <div class="stat-label">Upcoming confirmed sessions</div>
         </div>
 
-        <div class="booking-actions">
-            {% if b.is_future %}
-                <form method="POST"
-                      action="/team/cancel/{{ b.booking_id }}"
-                      onsubmit="return confirm('Cancel this booking?');">
-
-                    <button class="btn btn-danger btn-sm" type="submit">
-                        Cancel booking
-                    </button>
-                </form>
-            {% else %}
-                <span class= "muted">Completed / past</span>
-            {% endif %}
-        </div>
-
-    </article>
-    {% endfor %}
-</div>
-
-{% else %}
-<div class="empty-state">
-    <div class="empty-symbol">▣</div>
-    <h3>No confirmed bookings yet</h3>
-    <p>Your confirmed mentoring sessions will appear here.</p>
-    <a href="/team/dashboard" class="btn btn-primary">
-        Explore mentors →
-    </a>
-</div>
-{% endif %}
-
-<!-- CANCELLED BY MENTOR -->
-
-{% if cancelled %}
-<div class="section-heading waitlist-heading">
-    <div>
-        <div class="eyebrow">ACTION NEEDED</div>
-        <h2>Cancelled by mentor</h2>
-    </div>
-    <span class="badge">{{ cancelled|length }} cancelled</span>
-</div>
-
-<div class="booking-list">
-    {% for c in cancelled %}
-    <article class="booking-card">
-
-        <div class="booking-date-block">
-            <span class="booking-calendar-icon">▣</span>
-            <span class="booking-date">{{ c.slot_date }}</span>
-        </div>
-
-        <div class="booking-main">
-            <div class="booking-title-row">
-                <h3>{{ c.mentor_name }}</h3>
-                <span class="status-cancelled">
-                    ● {{ c.kind }} cancelled
-                </span>
+        <div class="booking-stat">
+            <div class="stat-top">
+                <div class="stat-icon icon-amber">◷</div>
+                <span class="booking-count">Waiting</span>
             </div>
 
-            <div class="booking-time">
-                <span>◷</span>
-                {{ c.start_t }} – {{ c.end_t }}
-            </div>
-
-            <p class="booking-reason">
-                <strong>Reason:</strong>
-                {{ c.reason or 'No reason provided' }}
-            </p>
+            <div class="stat-number">{{ waits|length }}</div>
+            <div class="stat-label">Active waitlist requests</div>
         </div>
 
-        <div class="booking-actions">
-            <a href="/team/dashboard"
-               class="btn btn-secondary btn-sm">
-                Book another slot
+    </section>
+
+
+    <!-- CONFIRMED BOOKINGS -->
+    <section class="booking-section">
+
+        <div class="section-heading">
+            <div>
+                <div class="section-label">YOUR CONFIRMED SESSIONS</div>
+                <h2>Upcoming and past bookings</h2>
+                <p>Manage your confirmed mentor meetings.</p>
+            </div>
+
+            <span class="booking-count">
+                {{ bookings|length }} bookings
+            </span>
+        </div>
+
+
+        {% if bookings %}
+
+        <div class="booking-search-toolbar">
+
+            <div class="booking-search">
+                <input
+                    type="search"
+                    id="booking-search"
+                    placeholder="Search mentor, date or reason..."
+                    aria-label="Search confirmed bookings"
+                >
+            </div>
+
+            <div class="booking-filter">
+                <select id="booking-filter" aria-label="Filter confirmed bookings">
+                    <option value="all">All bookings</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="past">Past sessions</option>
+                </select>
+            </div>
+
+            <span class="search-result-count" id="booking-count">
+                {{ bookings|length }} results
+            </span>
+
+        </div>
+
+
+        <div class="booking-list" id="confirmed-booking-list">
+
+            {% for b in bookings %}
+
+            <article
+                class="booking-card confirmed-card"
+                data-booking-status="{{ 'upcoming' if b.is_future else 'past' }}"
+            >
+
+                <div class="booking-date-block">
+                    <span class="booking-date-icon">▣</span>
+                    <span class="booking-date">{{ b.slot_date }}</span>
+                </div>
+
+
+                <div class="booking-main">
+
+                    <div class="booking-title-row">
+
+                        <h3>{{ b.mentor_name }}</h3>
+
+                        {% if b.is_future %}
+                        <span class="status-pill status-confirmed">
+                            ● Confirmed
+                        </span>
+                        {% else %}
+                        <span class="status-pill status-past">
+                            ● Past session
+                        </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="booking-time">
+                        ◷ {{ b.start_t }} – {{ b.end_t }}
+                    </div>
+
+
+                    <p class="booking-reason">
+                        <strong>Reason:</strong>
+                        {{ b.reason or 'No reason provided' }}
+                    </p>
+
+                </div>
+
+
+                <div class="booking-actions">
+
+                    {% if b.is_future %}
+
+                    <form
+                        method="POST"
+                        action="/team/cancel/{{ b.booking_id }}"
+                        class="confirm-booking-form"
+                        data-confirm="Are you sure you want to cancel this booking?"
+                    >
+                        <button class="btn btn-danger btn-sm" type="submit">
+                            Cancel booking
+                        </button>
+                    </form>
+
+                    {% else %}
+
+                    <span class="muted">Completed / past</span>
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div class="empty-search" id="no-booking-results">
+            No matching bookings found. Try a different search.
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <div class="empty-icon">▣</div>
+            <h3>No confirmed bookings yet</h3>
+            <p>Your confirmed mentoring sessions will appear here.</p>
+
+            <a href="/team/dashboard" class="btn">
+                Explore mentors →
             </a>
         </div>
 
-    </article>
-    {% endfor %}
-</div>
-{% endif %}
+        {% endif %}
 
-<!-- WAITLIST -->
+    </section>
 
-<div class="section-heading waitlist-heading">
-    <div>
-        <div class="eyebrow">WAITING FOR A SLOT</div>
-        <h2>My waitlist</h2>
-    </div>
-    <span class="badge">{{ waits|length }} requests</span>
-</div>
 
-{% if waits %}
-<div class="booking-list">
-    {% for w in waits %}
-    <article class="booking-card waitlist-card">
+    <!-- CANCELLED BOOKINGS -->
+    {% if cancelled %}
 
-        <div class="booking-date-block waitlist-date-block">
-            <span class="booking-calendar-icon">◷</span>
-            <span class="booking-date">{{ w.slot_date }}</span>
+    <section class="booking-section">
+
+        <div class="section-heading">
+            <div>
+                <div class="section-label" style="color:#b42318;">
+                    BOOKING UPDATES
+                </div>
+                <h2>Cancelled sessions</h2>
+                <p>Sessions and requests cancelled by the mentor or system.</p>
+            </div>
+
+            <span class="booking-count"
+                  style="background:#ffeded;color:#b42318;">
+                {{ cancelled|length }} cancelled
+            </span>
         </div>
 
-        <div class="booking-main">
-            <div class="booking-title-row">
-                <h3>{{ w.mentor_name }}</h3>
-                <span class="status-badge status-waiting">
-                    ● Waitlisted
-                </span>
+
+        <div class="booking-list">
+
+            {% for c in cancelled %}
+
+            <article class="booking-card cancelled-card">
+
+                <div class="booking-date-block">
+                    <span class="booking-date-icon">▣</span>
+                    <span class="booking-date">{{ c.slot_date }}</span>
+                </div>
+
+
+                <div class="booking-main">
+
+                    <div class="booking-title-row">
+                        <h3>{{ c.mentor_name }}</h3>
+
+                        <span class="status-pill status-cancelled">
+                            ● {{ c.kind }} cancelled
+                        </span>
+                    </div>
+
+                    <div class="booking-time">
+                        ◷ {{ c.start_t }} – {{ c.end_t }}
+                    </div>
+
+                    <p class="booking-reason">
+                        <strong>Reason:</strong>
+                        {{ c.reason or 'No reason provided' }}
+                    </p>
+
+                </div>
+
+
+                <div class="booking-actions">
+                    <a href="/team/dashboard"
+                       class="btn btn-secondary btn-sm">
+                        Find another slot
+                    </a>
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- WAITLIST -->
+    <section class="booking-section">
+
+        <div class="section-heading">
+            <div>
+                <div class="section-label">WAITING FOR A SLOT</div>
+                <h2>My waitlist</h2>
+                <p>Track your position and priority for unavailable sessions.</p>
             </div>
 
-            <div class="booking-time">
-                <span>◷</span>
-                {{ w.start_t }} – {{ w.end_t }}
+            <span class="booking-count">
+                {{ waits|length }} requests
+            </span>
+        </div>
+
+
+        {% if waits %}
+
+        <div class="booking-search-toolbar">
+
+            <div class="booking-search">
+                <input
+                    type="search"
+                    id="waitlist-search"
+                    placeholder="Search mentor, date or reason..."
+                    aria-label="Search waitlist requests"
+                >
             </div>
 
-            <p class="booking-reason">
-                <strong>Reason:</strong>
-                {{ w.reason or 'No reason provided' }}
+            <span class="search-result-count" id="waitlist-count">
+                {{ waits|length }} results
+            </span>
+
+        </div>
+
+
+        <div class="booking-list" id="waitlist-list">
+
+            {% for w in waits %}
+
+            <article class="booking-card waitlist-card">
+
+                <div class="booking-date-block">
+                    <span class="booking-date-icon">◷</span>
+                    <span class="booking-date">{{ w.slot_date }}</span>
+                </div>
+
+
+                <div class="booking-main">
+
+                    <div class="booking-title-row">
+
+                        <h3>{{ w.mentor_name }}</h3>
+
+                        <span class="status-pill status-waiting">
+                            ● Waitlisted
+                        </span>
+
+                    </div>
+
+
+                    <div class="booking-time">
+                        ◷ {{ w.start_t }} – {{ w.end_t }}
+                    </div>
+
+
+                    <p class="booking-reason">
+                        <strong>Reason:</strong>
+                        {{ w.reason or 'No reason provided' }}
+                    </p>
+
+
+                    <div class="waitlist-details">
+
+                        <span class="priority-label">
+                            {{ w.priority_label }}
+                        </span>
+
+                        {% if w.queue_pos %}
+
+                        <span class="queue-position">
+                            Queue position:
+                            <strong>#{{ w.queue_pos }}</strong>
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="booking-actions">
+
+                    <form
+                        method="POST"
+                        action="/team/leave_waitlist/{{ w.waitlist_id }}"
+                        class="confirm-booking-form"
+                        data-confirm="Are you sure you want to leave this waitlist?"
+                    >
+                        <button
+                            class="btn btn-secondary btn-sm"
+                            type="submit"
+                        >
+                            Leave waitlist
+                        </button>
+                    </form>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div class="empty-search" id="no-waitlist-results">
+            No matching waitlist requests found.
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <div class="empty-icon">✓</div>
+            <h3>No active waitlist requests</h3>
+            <p>
+                When you join a waitlist, your request and queue position
+                will appear here.
             </p>
 
-            <div class="waitlist-details">
-                <span class="badge pill-blue">
-                    {{ w.priority_label }}
-                </span>
-
-                <span class="queue-position">
-                    Queue position
-                    <strong>#{{ w.queue_pos }}</strong>
-                </span>
-            </div>
+            <a href="/team/dashboard" class="btn btn-secondary">
+                Explore mentors →
+            </a>
         </div>
 
-        <div class="booking-actions">
-            <form method="POST"
-                  action="/team/leave_waitlist/{{ w.waitlist_id }}"
-                  onsubmit="return confirm('Leave this waitlist?');">
+        {% endif %}
 
-                <button class="btn btn-secondary btn-sm" type="submit">
-                    Leave waitlist
-                </button>
-            </form>
-        </div>
+    </section>
 
-    </article>
-    {% endfor %}
+
+    <div class="page-footer">
+        <span>MentorMeet · Team workspace</span>
+        <span>Booking and waitlist information is loaded from your database.</span>
+    </div>
+
 </div>
-
-{% else %}
-<div class="empty-state compact-empty">
-    <div class="empty-symbol">✓</div>
-    <h3>No active waitlist requests</h3>
-    <p>
-        When you join a waitlist, your request and queue position
-        will appear here.
-    </p>
-</div>
-{% endif %}
 
 {% endblock %}
 
 
+{% block scripts %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // CONFIRMATION FOR CANCELLATION ACTIONS
+    document.querySelectorAll(".confirm-booking-form").forEach(
+        function (form) {
+
+            form.addEventListener("submit", function (event) {
+
+                const message =
+                    form.dataset.confirm || "Are you sure?";
+
+                if (!window.confirm(message)) {
+                    event.preventDefault();
+                }
+
+            });
+
+        }
+    );
+
+
+    // CONFIRMED BOOKING SEARCH AND FILTER
+    const bookingSearch =
+        document.getElementById("booking-search");
+
+    const bookingFilter =
+        document.getElementById("booking-filter");
+
+    const bookingCards = Array.from(
+        document.querySelectorAll(".confirmed-card")
+    );
+
+    const bookingCount =
+        document.getElementById("booking-count");
+
+    const noBookingResults =
+        document.getElementById("no-booking-results");
+
+
+    function filterBookings() {
+
+        if (!bookingSearch || !bookingFilter) return;
+
+        const query =
+            bookingSearch.value.toLowerCase().trim();
+
+        const selected =
+            bookingFilter.value;
+
+        let visible = 0;
+
+        bookingCards.forEach(function (card) {
+
+            const text =
+                card.innerText.toLowerCase();
+
+            const status =
+                card.dataset.bookingStatus;
+
+            const matchesSearch =
+                text.includes(query);
+
+            const matchesFilter =
+                selected === "all" || status === selected;
+
+            const show =
+                matchesSearch && matchesFilter;
+
+            card.classList.toggle(
+                "booking-hidden",
+                !show
+            );
+
+            if (show) visible++;
+
+        });
+
+        if (bookingCount) {
+            bookingCount.textContent =
+                visible + " results";
+        }
+
+        if (noBookingResults) {
+            noBookingResults.style.display =
+                visible === 0 ? "block" : "none";
+        }
+
+    }
+
+
+    if (bookingSearch) {
+        bookingSearch.addEventListener(
+            "input",
+            filterBookings
+        );
+    }
+
+    if (bookingFilter) {
+        bookingFilter.addEventListener(
+            "change",
+            filterBookings
+        );
+    }
+
+
+    // WAITLIST SEARCH
+    const waitlistSearch =
+        document.getElementById("waitlist-search");
+
+    const waitlistCards = Array.from(
+        document.querySelectorAll(".waitlist-card")
+    );
+
+    const waitlistCount =
+        document.getElementById("waitlist-count");
+
+    const noWaitlistResults =
+        document.getElementById("no-waitlist-results");
+
+
+    function filterWaitlist() {
+
+        if (!waitlistSearch) return;
+
+        const query =
+            waitlistSearch.value.toLowerCase().trim();
+
+        let visible = 0;
+
+        waitlistCards.forEach(function (card) {
+
+            const show =
+                card.innerText.toLowerCase().includes(query);
+
+            card.classList.toggle(
+                "booking-hidden",
+                !show
+            );
+
+            if (show) visible++;
+
+        });
+
+        if (waitlistCount) {
+            waitlistCount.textContent =
+                visible + " results";
+        }
+
+        if (noWaitlistResults) {
+            noWaitlistResults.style.display =
+                visible === 0 ? "block" : "none";
+        }
+
+    }
+
+
+    if (waitlistSearch) {
+        waitlistSearch.addEventListener(
+            "input",
+            filterWaitlist
+        );
+    }
+
+});
+</script>
+
+{% endblock %}
