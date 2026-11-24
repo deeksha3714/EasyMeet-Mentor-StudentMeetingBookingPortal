@@ -2,31 +2,565 @@
 {% extends "base.html" %}
 {% block title %}Team Dashboard{% endblock %}
 
-{% block content %}
-  <h2>Welcome, {{ session.name }}</h2>
-  <p class="sub">Choose a mentor to view their calendar and book an available time.</p>
+{% block head %}
+<style>
+.td-page {
+  max-width: 1200px;
+  margin: auto;
+}
 
-  {% if mentors %}
-  <div class="grid">
-    {% for m in mentors %}
-    <div class="card mentor-card" style="margin:0">
-      <div class="avatar">{{ m.name[0]|upper }}</div>
-      <div>
-        <b>{{ m.name }}</b><br>
-        <span class="muted">{{ m.department or 'Department not set' }}</span>
-      </div>
-      <a class="btn btn-ghost btn-sm" href="/team/mentor/{{ m.mentor_id }}">Open calendar</a>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-    <div class="empty">No mentors registered yet.</div>
-  {% endif %}
+[data-theme="dark"] .td-page {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .td-stat,
+[data-theme="dark"] .td-directory {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .td-stat-number,
+[data-theme="dark"] .td-section h3 {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .td-stat-icon {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+[data-theme="dark"] .td-tag {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+[data-theme="dark"] .td-search,
+[data-theme="dark"] .td-filter {
+  background: var(--page);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.td-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.td-heading h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.td-heading p {
+  color: var(--muted);
+  margin: 7px 0 0;
+}
+
+.td-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: 30px;
+  background: #edf2ff;
+  color: #3157d5;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.td-tag span {
+  width: 8px;
+  height: 8px;
+  background: #3157d5;
+  border-radius: 50%;
+}
+
+.td-overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.td-stat {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 19px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: .2s;
+}
+
+.td-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+.td-stat-icon {
+  width: 45px;
+  height: 45px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eeedff;
+  color: #635bff;
+  font-size: 20px;
+}
+
+.td-stat-number {
+  font-size: 27px;
+  font-weight: 850;
+}
+
+.td-stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.td-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.td-section h3 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.td-section p {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.td-directory {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.td-tools {
+  display: flex;
+  gap: 11px;
+  flex-wrap: wrap;
+  margin-bottom: 17px;
+}
+
+.td-search {
+  flex: 1;
+  min-width: 220px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.td-filter {
+  min-width: 170px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  color: var(--ink);
+}
+
+.td-search:focus,
+.td-filter:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px #3157d51a;
+}
+
+.td-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.td-mentor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  transition: .2s;
+}
+
+.td-mentor:hover {
+  border-color: #c9d4ff;
+  background: #fafbff;
+  transform: translateX(2px);
+}
+
+.td-mentor-info {
+  min-width: 180px;
+  flex: 1;
+}
+
+.td-mentor-name {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.td-mentor-department {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.td-mentor-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.td-mentor-actions a {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 37px;
+  padding: 8px 13px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  transition: .2s;
+}
+
+.td-calendar-btn {
+  background: #edf2ff;
+  color: #3157d5;
+  border: 1px solid #dce5ff;
+}
+
+.td-calendar-btn:hover {
+  background: #dfe8ff;
+}
+
+.td-message-btn {
+  background: var(--blue);
+  color: white;
+  border: 1px solid var(--blue);
+}
+
+.td-message-btn:hover {
+  filter: brightness(.92);
+}
+
+.td-results {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.td-empty {
+  padding: 45px 15px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.td-empty-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: #f0f2f8;
+  margin: 0 auto 13px;
+  font-size: 23px;
+}
+
+.td-empty h3 {
+  color: var(--ink);
+  margin: 0 0 7px;
+}
+
+.td-empty p {
+  font-size: 13px;
+  margin: 0;
+}
+
+.td-hidden {
+  display: none !important;
+}
+
+@media(max-width: 600px) {
+  .td-heading h2 {
+    font-size: 24px;
+  }
+
+  .td-overview {
+    gap: 9px;
+  }
+
+  .td-stat {
+    padding: 13px;
+    gap: 10px;
+  }
+
+  .td-stat-number {
+    font-size: 23px;
+  }
+
+  .td-stat-icon {
+    width: 37px;
+    height: 37px;
+  }
+
+  .td-directory {
+    padding: 13px;
+  }
+
+  .td-mentor {
+    align-items: flex-start;
+  }
+
+  .td-mentor-actions {
+    width: 100%;
+  }
+
+  .td-mentor-actions a {
+    flex: 1;
+  }
+
+  .td-tools {
+    flex-direction: column;
+  }
+
+  .td-search,
+  .td-filter {
+    width: 100%;
+  }
+}
+</style>
 {% endblock %}
 
 
+{% block content %}
+<div class="td-page">
+
+  <div class="td-heading">
+    <div>
+      <h2>Welcome, {{ session.name }}</h2>
+      <p>Find a mentor, explore their availability and manage your meetings.</p>
+    </div>
+
+    <div class="td-tag">
+      <span></span>
+      Team workspace
+    </div>
+  </div>
 
 
+  <div class="td-overview">
+
+    <div class="td-stat">
+      <div class="td-stat-icon">♙</div>
+      <div>
+        <div class="td-stat-number">{{ mentors|length }}</div>
+        <div class="td-stat-label">Registered mentors</div>
+      </div>
+    </div>
+
+    <div class="td-stat">
+      <div class="td-stat-icon">⌕</div>
+      <div>
+        <div class="td-stat-number">Explore</div>
+        <div class="td-stat-label">Find your next mentor</div>
+      </div>
+    </div>
+
+  </div>
 
 
+  <div class="td-section">
+    <div>
+      <h3>Explore mentors</h3>
+      <p>Choose a mentor to view their calendar or start a conversation.</p>
+    </div>
+  </div>
 
+
+  <section class="td-directory">
+
+    {% if mentors %}
+
+    <div class="td-tools">
+
+      <input
+        type="search"
+        id="mentor-search"
+        class="td-search"
+        placeholder="Search by mentor name or department..."
+        aria-label="Search mentors"
+      >
+
+      <select
+        id="department-filter"
+        class="td-filter"
+        aria-label="Filter by department"
+      >
+        <option value="all">All departments</option>
+
+        {% for department in mentors|map(attribute='department')|select|unique|sort %}
+          <option value="{{ department|lower }}">{{ department }}</option>
+        {% endfor %}
+
+      </select>
+
+    </div>
+
+
+    <div class="td-results" id="mentor-results">
+      Showing {{ mentors|length }} mentor(s)
+    </div>
+
+
+    <div class="td-list" id="mentor-list">
+
+      {% for m in mentors %}
+
+      <div
+        class="td-mentor"
+        data-name="{{ m.name|lower }}"
+        data-department="{{ (m.department or 'Department not set')|lower }}"
+      >
+
+        <div class="td-mentor-info">
+
+          <div class="td-mentor-name">
+            {{ m.name }}
+            {% if assigned_mentor_id and m.mentor_id == assigned_mentor_id %}
+              <span class="badge pill-green" style="font-size: 11px; margin-left: 6px;">Your Mentor</span>
+            {% endif %}
+          </div>
+
+          <div class="td-mentor-department">
+            {{ m.department or 'Department not set' }}
+          </div>
+
+        </div>
+
+
+        <div class="td-mentor-actions">
+
+          <a
+            class="td-calendar-btn"
+            href="/team/mentor/{{ m.mentor_id }}"
+          >
+            <span>▦</span>
+            View calendar
+          </a>
+
+          <a
+            class="td-message-btn"
+            href="{{ url_for('inbox', mentor_id=m.mentor_id) }}"
+          >
+            <span>✉</span>
+            Message
+          </a>
+
+        </div>
+
+      </div>
+
+      {% endfor %}
+
+    </div>
+
+
+    <div class="td-empty td-hidden" id="mentor-no-results">
+      <div class="td-empty-icon">⌕</div>
+      <h3>No mentors found</h3>
+      <p>Try another name or select a different department.</p>
+    </div>
+
+
+    {% else %}
+
+    <div class="td-empty">
+      <div class="td-empty-icon">♙</div>
+      <h3>No mentors registered yet</h3>
+      <p>Registered mentors will appear here when they join the portal.</p>
+    </div>
+
+    {% endif %}
+
+  </section>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const searchInput = document.getElementById("mentor-search");
+  const departmentFilter = document.getElementById("department-filter");
+  const mentorRows = Array.from(document.querySelectorAll(".td-mentor"));
+  const noResults = document.getElementById("mentor-no-results");
+  const resultCount = document.getElementById("mentor-results");
+
+  function filterMentors() {
+
+    if (!searchInput || !departmentFilter) return;
+
+    const search = searchInput.value.toLowerCase().trim();
+    const department = departmentFilter.value;
+
+    let visible = 0;
+
+    mentorRows.forEach(function (row) {
+
+      const name = row.dataset.name;
+      const dept = row.dataset.department;
+
+      const matchesSearch =
+        name.includes(search) || dept.includes(search);
+
+      const matchesDepartment =
+        department === "all" || dept === department;
+
+      const show = matchesSearch && matchesDepartment;
+
+      row.classList.toggle("td-hidden", !show);
+
+      if (show) visible++;
+
+    });
+
+    if (noResults) {
+      noResults.classList.toggle("td-hidden", visible !== 0);
+    }
+
+    if (resultCount) {
+      resultCount.textContent =
+        "Showing " + visible + " of " + mentorRows.length + " mentor(s)";
+    }
+  }
+
+  searchInput?.addEventListener("input", filterMentors);
+  departmentFilter?.addEventListener("change", filterMentors);
+
+});
+</script>
+{% endblock %}
