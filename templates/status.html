@@ -1,220 +1,995 @@
 
 {% extends "base.html" %}
-{% block title %}Live Status{% endblock %}
+{% block title %}Live System Status{% endblock %}
 
 {% block head %}
-<meta http-equiv="refresh" content="5">
+<style>
+.st-page {
+  max-width: 1250px;
+  margin: auto;
+}
+
+[data-theme="dark"] .st-page {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .st-info,
+[data-theme="dark"] .st-stat,
+[data-theme="dark"] .st-section,
+[data-theme="dark"] .st-card {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .st-info-value,
+[data-theme="dark"] .st-stat-num,
+[data-theme="dark"] .st-number,
+[data-theme="dark"] .st-section h2,
+[data-theme="dark"] .st-score,
+[data-theme="dark"] .st-position {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .st-count {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+[data-theme="dark"] .st-position {
+  background: var(--page);
+}
+
+[data-theme="dark"] .st-first {
+  background: #133827;
+  color: #43c99a;
+}
+
+[data-theme="dark"] .st-stat-icon {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+[data-theme="dark"] .st-indigo { background: var(--blue-soft); color: var(--blue); }
+[data-theme="dark"] .st-green { background: #133827; color: #43c99a; }
+[data-theme="dark"] .st-blue { background: #1b2848; color: #72a9f8; }
+
+[data-theme="dark"] .st-available {
+  background: #133827;
+  color: #43c99a;
+}
+
+[data-theme="dark"] .st-booked {
+  background: #3d1b22;
+  color: #ff7187;
+}
+
+[data-theme="dark"] .st-priority {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+[data-theme="dark"] .st-live {
+  background: #133827;
+  color: #43c99a;
+}
+
+[data-theme="dark"] .st-empty-icon {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+[data-theme="dark"] .st-table-wrap {
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .st-table {
+  background: var(--surface);
+}
+
+[data-theme="dark"] .st-table th {
+  background: var(--page);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+
+[data-theme="dark"] .st-table td {
+  border-bottom-color: var(--line);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .st-table tbody tr:hover {
+  background: var(--blue-soft);
+}
+
+[data-theme="dark"] .st-table tr:hover td {
+  background: var(--blue-soft);
+}
+
+[data-theme="dark"] .st-search,
+[data-theme="dark"] .st-filter {
+  background: var(--page);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.st-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 23px;
+}
+
+.st-heading h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.st-heading p {
+  color: var(--muted);
+  margin: 7px 0 0;
+}
+
+.st-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  background: #eaf9ef;
+  color: #16834a;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.st-live-dot {
+  width: 9px;
+  height: 9px;
+  background: #16a34a;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px #16a34a22;
+  animation: st-pulse 1.8s infinite;
+}
+
+@keyframes st-pulse {
+  50% { box-shadow: 0 0 0 7px #16a34a10; }
+}
+
+.st-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 15px 19px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.st-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.st-info-label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 750;
+  letter-spacing: .5px;
+}
+
+.st-info-value {
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.st-info-divider {
+  height: 33px;
+  width: 1px;
+  background: var(--line);
+}
+
+.st-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+.st-stat {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 19px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: .2s;
+}
+
+.st-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+.st-stat-icon {
+  width: 47px;
+  height: 47px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.st-indigo { background: #eeedff; color: #635bff; }
+.st-green { background: #e9f9ef; color: #16834a; }
+.st-blue { background: #eaf4ff; color: #2874ce; }
+
+.st-number {
+  font-size: 28px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.st-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.st-section {
+  margin: 27px 0 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.st-section h2 {
+  font-size: 21px;
+  margin: 3px 0 0;
+}
+
+.st-eyebrow {
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+}
+
+.st-section-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+
+.st-count {
+  background: #f0f2f8;
+  color: #505a70;
+  border-radius: 30px;
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.st-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 22px;
+}
+
+.st-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.st-search {
+  flex: 1;
+  min-width: 220px;
+  max-width: 380px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 13px;
+}
+
+.st-filter {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  padding: 10px 12px;
+}
+
+.st-search:focus,
+.st-filter:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px #3157d51a;
+}
+
+.st-table-wrap {
+  overflow-x: auto;
+}
+
+.st-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.st-table th {
+  text-align: left;
+  background: #f8f9fc;
+  color: #697386;
+  padding: 13px 12px;
+  font-size: 10px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.st-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #edf0f4;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.st-table tbody tr {
+  transition: background .15s;
+}
+
+.st-table tbody tr:hover {
+  background: #fafaff;
+}
+
+.st-id {
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.st-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 30px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.st-available {
+  color: #16834a;
+  background: #e9f9ef;
+}
+
+.st-booked {
+  color: #c93636;
+  background: #fff0f0;
+}
+
+.st-priority {
+  display: inline-block;
+  border-radius: 30px;
+  padding: 6px 10px;
+  background: #eeedff;
+  color: #554de0;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.st-score {
+  font-weight: 800;
+  color: #344054;
+  font-variant-numeric: tabular-nums;
+}
+
+.st-position {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f1f3f8;
+  font-weight: 750;
+  font-size: 12px;
+}
+
+.st-first {
+  background: #e9f9ef;
+  color: #16834a;
+}
+
+.st-reason {
+  max-width: 190px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.st-empty {
+  text-align: center;
+  padding: 38px 15px;
+  color: var(--muted);
+}
+
+.st-empty-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+  border-radius: 14px;
+  background: #f0f2f8;
+  font-size: 22px;
+}
+
+.st-empty h3 {
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.st-empty p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.st-no-results {
+  padding: 25px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.st-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 8px;
+}
+
+.st-footer .st-live-dot {
+  width: 7px;
+  height: 7px;
+}
+
+@media(max-width: 700px) {
+  .st-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .st-info {
+    gap: 12px;
+  }
+
+  .st-info-divider {
+    display: none;
+  }
+
+  .st-card {
+    padding: 14px;
+  }
+
+  .st-heading h1 {
+    font-size: 24px;
+  }
+
+  .st-search {
+    max-width: none;
+    width: 100%;
+  }
+}
+</style>
 {% endblock %}
 
+
 {% block content %}
+<div class="st-page">
 
-<div class="page-header">
+  <div class="st-heading">
     <div>
-        <div class="eyebrow">SYSTEM MONITOR</div>
-        <h1>Live system status</h1>
-        <p>Monitor slot availability, confirmed bookings, and waitlist priority.</p>
+      <div class="st-eyebrow">SYSTEM MONITORING</div>
+      <h1>Live system status</h1>
+      <p>Monitor mentor availability, confirmed bookings and waitlist priority.</p>
     </div>
 
-    <div class="live-indicator">
-        <span class="live-dot"></span>
-        Live updates
+    <div class="st-live">
+      <span class="st-live-dot"></span>
+      Live updates enabled
     </div>
-</div>
+  </div>
 
-<div class="status-info-bar">
-    <div class="status-info-item">
-        <span class="info-label">Booking policy</span>
-        <span class="badge pill-blue">{{ policy }}</span>
-    </div>
 
-    <div class="status-info-divider"></div>
+  <div class="st-info">
 
-    <div class="status-info-item">
-        <span class="info-label">Priority aging</span>
-        <strong>+1 score / {{ aging_seconds }} sec</strong>
+    <div class="st-info-item">
+      <span class="st-info-label">Scheduling system</span>
+      <span class="st-info-value">Active</span>
     </div>
 
-    <div class="status-info-divider"></div>
+    <div class="st-info-divider"></div>
 
-    <div class="status-info-item">
-        <span class="info-label">Auto refresh</span>
-        <strong>Every 5 seconds</strong>
-    </div>
-</div>
-
-<!-- OVERVIEW -->
-
-<div class="stats status-stats">
-
-    <div class="stat status-stat">
-        <div class="status-stat-icon icon-indigo">▦</div>
-        <div>
-            <div class="num">{{ total }}</div>
-            <div class="lbl">Total slots</div>
-        </div>
+    <div class="st-info-item">
+      <span class="st-info-label">Waitlist requests</span>
+      <span class="st-info-value">{{ waits|length }} waiting</span>
     </div>
 
-    <div class="stat status-stat">
-        <div class="status-stat-icon icon-green">✓</div>
-        <div>
-            <div class="num">{{ booked }}</div>
-            <div class="lbl">Booked slots</div>
-        </div>
+    <div class="st-info-divider"></div>
+
+    <div class="st-info-item">
+      <span class="st-info-label">Refresh interval</span>
+      <span class="st-info-value">5 seconds</span>
     </div>
 
-    <div class="stat status-stat">
-        <div class="status-stat-icon icon-blue">◷</div>
-        <div>
-            <div class="num">{{ available }}</div>
-            <div class="lbl">Available slots</div>
-        </div>
+    <div class="st-info-divider"></div>
+
+    <div class="st-info-item">
+      <span class="st-info-label">Records displayed</span>
+      <span class="st-info-value">{{ slots|length }} upcoming slots</span>
     </div>
 
-</div>
+  </div>
 
-<!-- ALL SLOTS -->
 
-<div class="section-heading">
+  <div class="st-stats">
+
+    <div class="st-stat">
+      <div class="st-stat-icon st-indigo">▦</div>
+      <div>
+        <div class="st-number">{{ total }}</div>
+        <div class="st-label">Total upcoming slots</div>
+      </div>
+    </div>
+
+    <div class="st-stat">
+      <div class="st-stat-icon st-green">✓</div>
+      <div>
+        <div class="st-number">{{ booked }}</div>
+        <div class="st-label">Confirmed bookings</div>
+      </div>
+    </div>
+
+    <div class="st-stat">
+      <div class="st-stat-icon st-blue">◷</div>
+      <div>
+        <div class="st-number">{{ available }}</div>
+        <div class="st-label">Available slots</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="st-section">
     <div>
-        <div class="eyebrow">AVAILABILITY OVERVIEW</div>
-        <h2>All mentor slots</h2>
+      <div class="st-eyebrow">AVAILABILITY OVERVIEW</div>
+      <h2>All mentor slots</h2>
+      <p class="st-section-desc">Upcoming slots across registered mentors.</p>
     </div>
-    <span class="badge">{{ slots|length }} records</span>
-</div>
 
-<div class="card status-table-card">
+    <span class="st-count">{{ slots|length }} records</span>
+  </div>
+
+
+  <section class="st-card">
 
     {% if slots %}
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Slot</th>
-                    <th>Mentor</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                    <th>Held by</th>
-                    <th>Reason</th>
-                </tr>
-            </thead>
 
-            <tbody>
-                {% for s in slots %}
-                <tr>
-                    <td><span class="id-label">#{{ s.slot_id }}</span></td>
+    <div class="st-toolbar">
 
-                    <td><strong>{{ s.mentor_name }}</strong></td>
+      <input
+        type="search"
+        id="slot-search"
+        class="st-search"
+        placeholder="Search mentor, date, team or reason..."
+        aria-label="Search mentor slots"
+      >
 
-                    <td>{{ s.slot_date }}</td>
+      <select id="slot-filter" class="st-filter" aria-label="Filter by slot status">
+        <option value="all">All statuses</option>
+        <option value="available">Available</option>
+        <option value="booked">Booked</option>
+      </select>
 
-                    <td class="status-time">
-                        {{ s.start_t }} – {{ s.end_t }}
-                    </td>
+    </div>
 
-                    <td>
-                        {% if s.status == 'available' %}
-                            <span class="status-badge status-available">● Available</span>
-                        {% elif s.status == 'booked' %}
-                            <span class="status-badge status-booked">● Booked</span>
-                        {% else %}
-                            <span class="badge">{{ s.status }}</span>
-                        {% endif %}
-                    </td>
 
-                    <td>{{ s.holder or '—' }}</td>
+    <div class="st-table-wrap">
+      <table class="st-table">
 
-                    <td class="reason-cell">{{ s.reason or '—' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <thead>
+          <tr>
+            <th>Slot ID</th>
+            <th>Mentor</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Held by</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+
+        <tbody id="slot-table-body">
+
+          {% for s in slots %}
+
+          <tr
+            class="slot-row"
+            data-status="{{ s.status }}"
+            data-search="{{ (s.slot_id|string ~ ' ' ~ s.mentor_name ~ ' ' ~ s.slot_date|string ~ ' ' ~ (s.holder or '') ~ ' ' ~ (s.reason or '') ~ ' ' ~ s.status)|lower }}"
+          >
+
+            <td>
+              <span class="st-id">#{{ s.slot_id }}</span>
+            </td>
+
+            <td><strong>{{ s.mentor_name }}</strong></td>
+
+            <td>{{ s.slot_date }}</td>
+
+            <td>{{ s.start_t }} – {{ s.end_t }}</td>
+
+            <td>
+              {% if s.status == 'available' %}
+                <span class="st-status st-available">● Available</span>
+              {% elif s.status == 'booked' %}
+                <span class="st-status st-booked">● Booked</span>
+              {% else %}
+                <span class="st-status">{{ s.status }}</span>
+              {% endif %}
+            </td>
+
+            <td>{{ s.holder or '—' }}</td>
+
+            <td class="st-reason">{{ s.reason or '—' }}</td>
+
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+    </div>
+
+    <div class="st-no-results" id="slot-no-results" hidden>
+      No slots match your search or selected filter.
     </div>
 
     {% else %}
-    <div class="empty-state compact-empty">
-        <div class="empty-symbol">▦</div>
-        <h3>No slots available to display</h3>
-        <p>Slots will appear here once mentors add their availability.</p>
+
+    <div class="st-empty">
+      <div class="st-empty-icon">▦</div>
+      <h3>No upcoming slots</h3>
+      <p>Slots will appear here once mentors add their availability.</p>
     </div>
+
     {% endif %}
 
-</div>
+  </section>
 
-<!-- WAITLIST -->
 
-<div class="section-heading waitlist-heading">
+  <div class="st-section">
     <div>
-        <div class="eyebrow">QUEUE MANAGEMENT</div>
-        <h2>Waitlist priority</h2>
-        <p>Service order under the {{ policy }} policy.</p>
+      <div class="st-eyebrow">QUEUE MANAGEMENT</div>
+      <h2>Waitlist priority</h2>
+      <p class="st-section-desc">
+        Teams are displayed according to their current queue position.
+      </p>
     </div>
 
-    <span class="badge">{{ waits|length }} waiting</span>
-</div>
+    <span class="st-count">{{ waits|length }} waiting</span>
+  </div>
 
-<div class="card status-table-card">
+
+  <section class="st-card">
 
     {% if waits %}
 
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Slot</th>
-                    <th>Team</th>
-                    <th>Priority</th>
-                    <th>Requested at</th>
-                    <th>Score</th>
-                    <th>Queue position</th>
-                </tr>
-            </thead>
+    <div class="st-toolbar">
 
-            <tbody>
-                {% for w in waits %}
-                <tr>
-                    <td><span class="id-label">#{{ w.slot_id }}</span></td>
+      <input
+        type="search"
+        id="wait-search"
+        class="st-search"
+        placeholder="Search team, slot or priority..."
+        aria-label="Search waitlist"
+      >
 
-                    <td><strong>{{ w.team_name }}</strong></td>
+      <span class="st-count">
+        {{ waits|length }} active requests
+      </span>
 
-                    <td>
-                        <span class="badge pill-blue">
-                            {{ w.priority_label }}
-                        </span>
-                    </td>
+    </div>
 
-                    <td>{{ w.requested_at }}</td>
 
-                    <td><span class="score-label">{{ w.score }}</span></td>
+    <div class="st-table-wrap">
+      <table class="st-table">
 
-                    <td>
-                        {% if w.queue_pos == 1 %}
-                            <span class="queue-first">#{{ w.queue_pos }} · Next</span>
-                        {% else %}
-                            <span class="badge pill-amber">#{{ w.queue_pos }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <thead>
+          <tr>
+            <th>Slot</th>
+            <th>Team</th>
+            <th>Priority</th>
+            <th>Requested at</th>
+            <th>Score</th>
+            <th>Queue position</th>
+          </tr>
+        </thead>
+
+        <tbody id="wait-table-body">
+
+          {% for w in waits %}
+
+          <tr
+            class="wait-row"
+            data-search="{{ (w.slot_id|string ~ ' ' ~ w.team_name ~ ' ' ~ w.priority_label ~ ' ' ~ w.requested_at|string ~ ' ' ~ w.queue_pos|string)|lower }}"
+          >
+
+            <td>
+              <span class="st-id">#{{ w.slot_id }}</span>
+            </td>
+
+            <td><strong>{{ w.team_name }}</strong></td>
+
+            <td>
+              <span class="st-priority">
+                {{ w.priority_label }}
+              </span>
+            </td>
+
+            <td>{{ w.requested_at }}</td>
+
+            <td>
+              <span class="st-score">{{ w.score }}</span>
+            </td>
+
+            <td>
+              {% if w.queue_pos == 1 %}
+                <span class="st-position st-first">
+                  #{{ w.queue_pos }} · Next
+                </span>
+              {% else %}
+                <span class="st-position">
+                  #{{ w.queue_pos }}
+                </span>
+              {% endif %}
+            </td>
+
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+    </div>
+
+    <div class="st-no-results" id="wait-no-results" hidden>
+      No waitlist requests match your search.
     </div>
 
     {% else %}
 
-    <div class="empty-state compact-empty">
-        <div class="empty-symbol">✓</div>
-        <h3>Nobody is waiting</h3>
-        <p>There are currently no active waitlist requests.</p>
+    <div class="st-empty">
+      <div class="st-empty-icon">✓</div>
+      <h3>Nobody is waiting</h3>
+      <p>There are currently no active waitlist requests.</p>
     </div>
 
     {% endif %}
 
+  </section>
+
+
+  <div class="st-footer">
+    <span class="st-live-dot"></span>
+    This page refreshes automatically every 5 seconds.
+  </div>
+
 </div>
+{% endblock %}
 
-<p class="status-footer-note">
-    <span class="live-dot"></span>
-    Data refreshes automatically every 5 seconds.
-</p>
 
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  /* Slot search and status filter */
+
+  const slotSearch = document.getElementById("slot-search");
+  const slotFilter = document.getElementById("slot-filter");
+  const waitSearch = document.getElementById("wait-search");
+
+  function filterSlots() {
+    const search = slotSearch
+      ? slotSearch.value.toLowerCase().trim()
+      : "";
+
+    const status = slotFilter
+      ? slotFilter.value
+      : "all";
+
+    let visible = 0;
+    const rows = document.querySelectorAll(".slot-row");
+
+    rows.forEach(function (row) {
+      const text = row.dataset.search || "";
+      const rowStatus = row.dataset.status || "";
+      const matchesSearch = text.includes(search);
+      const matchesStatus = status === "all" || rowStatus === status;
+      const show = matchesSearch && matchesStatus;
+
+      row.hidden = !show;
+
+      if (show) visible++;
+    });
+
+    const slotEmpty = document.getElementById("slot-no-results");
+    if (slotEmpty) {
+      slotEmpty.hidden = visible !== 0 || rows.length === 0;
+    }
+  }
+
+  function filterWaitlist() {
+    if (!waitSearch) return;
+
+    const search = waitSearch.value.toLowerCase().trim();
+    let visible = 0;
+    const rows = document.querySelectorAll(".wait-row");
+
+    rows.forEach(function (row) {
+      const text = row.dataset.search || "";
+      const show = text.includes(search);
+
+      row.hidden = !show;
+
+      if (show) visible++;
+    });
+
+    const waitEmpty = document.getElementById("wait-no-results");
+    if (waitEmpty) {
+      waitEmpty.hidden = visible !== 0 || rows.length === 0;
+    }
+  }
+
+  /* Input event listeners with sessionStorage persistence */
+
+  if (slotSearch) {
+    slotSearch.addEventListener("input", function () {
+      sessionStorage.setItem("status_slot_search", slotSearch.value);
+      filterSlots();
+    });
+  }
+
+  if (slotFilter) {
+    slotFilter.addEventListener("change", function () {
+      sessionStorage.setItem("status_slot_filter", slotFilter.value);
+      filterSlots();
+    });
+  }
+
+  if (waitSearch) {
+    waitSearch.addEventListener("input", function () {
+      sessionStorage.setItem("status_wait_search", waitSearch.value);
+      filterWaitlist();
+    });
+  }
+
+  function restoreSavedInputs() {
+    const savedSlotSearch = sessionStorage.getItem("status_slot_search");
+    if (savedSlotSearch !== null && slotSearch && slotSearch.value !== savedSlotSearch) {
+      slotSearch.value = savedSlotSearch;
+    }
+
+    const savedSlotFilter = sessionStorage.getItem("status_slot_filter");
+    if (savedSlotFilter !== null && slotFilter && slotFilter.value !== savedSlotFilter) {
+      slotFilter.value = savedSlotFilter;
+    }
+
+    const savedWaitSearch = sessionStorage.getItem("status_wait_search");
+    if (savedWaitSearch !== null && waitSearch && waitSearch.value !== savedWaitSearch) {
+      waitSearch.value = savedWaitSearch;
+    }
+
+    filterSlots();
+    filterWaitlist();
+  }
+
+  // Restore saved query and filter on page load
+  restoreSavedInputs();
+
+  // Restore when user switches back to this tab
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      restoreSavedInputs();
+    }
+  });
+
+  window.addEventListener("pageshow", restoreSavedInputs);
+
+  /* Live background polling every 5s without page reload or input disruption */
+
+  let isRefreshing = false;
+
+  function refreshStatus() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+
+    fetch(window.location.href, {
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error("Status refresh failed");
+        return res.text();
+      })
+      .then(function (html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        // Update info bar
+        const currentInfo = document.querySelector(".st-info");
+        const docInfo = doc.querySelector(".st-info");
+        if (currentInfo && docInfo) {
+          currentInfo.innerHTML = docInfo.innerHTML;
+        }
+
+        // Update stats cards
+        const currentStats = document.querySelector(".st-stats");
+        const docStats = doc.querySelector(".st-stats");
+        if (currentStats && docStats) {
+          currentStats.innerHTML = docStats.innerHTML;
+        }
+
+        // Update section count badges
+        const currentCounts = document.querySelectorAll(".st-section .st-count");
+        const docCounts = doc.querySelectorAll(".st-section .st-count");
+        currentCounts.forEach(function (el, i) {
+          if (docCounts[i]) {
+            el.innerHTML = docCounts[i].innerHTML;
+          }
+        });
+
+        // Update slot table body
+        const currentSlotTbody = document.getElementById("slot-table-body");
+        const docSlotTbody = doc.getElementById("slot-table-body");
+        if (currentSlotTbody && docSlotTbody) {
+          currentSlotTbody.innerHTML = docSlotTbody.innerHTML;
+        }
+
+        // Update waitlist table body
+        const currentWaitTbody = document.getElementById("wait-table-body");
+        const docWaitTbody = doc.getElementById("wait-table-body");
+        if (currentWaitTbody && docWaitTbody) {
+          currentWaitTbody.innerHTML = docWaitTbody.innerHTML;
+        }
+
+        // Re-filter the rows with active search and filter
+        filterSlots();
+        filterWaitlist();
+      })
+      .catch(function () {
+        // Silently ignore transient network errors
+      })
+      .finally(function () {
+        isRefreshing = false;
+      });
+  }
+
+  setInterval(refreshStatus, 5000);
+
+});
+</script>
 {% endblock %}
