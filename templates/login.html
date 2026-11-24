@@ -2,156 +2,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Mentor Booking Portal</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | MentorMeet</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <style>
+    * { box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-            background: #f1f5f9;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, #dbeafe, transparent 40%),
+        linear-gradient(135deg, #f8fafc, #eef2ff);
+    }
 
-        .login-container {
-            width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            margin: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 34px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      box-shadow: 0 18px 55px rgba(30, 64, 175, .10);
+      animation: appear .5s ease;
+    }
 
-        h2 {
-            margin-top: 0;
-            text-align: center;
-            color: #1e293b;
-        }
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        p {
-            text-align: center;
-            color: #64748b;
-        }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      color: #1e40af;
+      font-weight: 800;
+      font-size: 20px;
+    }
 
-        label {
-            display: block;
-            margin-top: 16px;
-            margin-bottom: 7px;
-            font-weight: bold;
-            color: #334155;
-        }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      border-radius: 12px;
+      font-size: 20px;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 11px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 15px;
-            background: white;
-        }
+    h1 {
+      margin: 0 0 9px;
+      color: #172554;
+      font-size: 28px;
+    }
 
-        input:focus, select:focus {
-            outline: 2px solid #93c5fd;
-            border-color: #2563eb;
-        }
+    .subtitle {
+      margin: 0 0 25px;
+      color: #64748b;
+      line-height: 1.6;
+      font-size: 14px;
+    }
 
-        button {
-            width: 100%;
-            margin-top: 22px;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            background: #2563eb;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+    .messages {
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 13px;
+      line-height: 1.5;
+    }
 
-        button:hover {
-            background: #1d4ed8;
-        }
+    .form-group { margin-bottom: 19px; }
 
-        .messages {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            background: #fee2e2;
-            color: #991b1b;
-        }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
 
-        .register-link {
-            margin-top: 20px;
-            text-align: center;
-        }
+    input, select {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      background: #fff;
+      color: #1e293b;
+      font-size: 14px;
+      outline: none;
+      transition: border .2s, box-shadow .2s;
+    }
 
-        a {
-            color: #2563eb;
-            text-decoration: none;
-        }
+    input:focus, select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
 
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    .password-wrap { position: relative; }
+
+    .password-wrap input { padding-right: 75px; }
+
+    .toggle-password {
+      position: absolute;
+      right: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      color: #2563eb;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    .login-button {
+      width: 100%;
+      margin-top: 7px;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(110deg, #2563eb, #4f46e5);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37,99,235,.25);
+    }
+
+    .login-button:disabled {
+      opacity: .7;
+      cursor: wait;
+      transform: none;
+    }
+
+    .register-link {
+      margin-top: 23px;
+      padding-top: 19px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    a {
+      color: #2563eb;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .back-link {
+      display: block;
+      margin-top: 19px;
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    @media(max-width: 480px) {
+      .login-container { padding: 25px 21px; }
+      h1 { font-size: 25px; }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="login-container">
-        <h2>Welcome Back</h2>
-        <p>Login to Mentor Booking Portal account</p>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="messages">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+  <main class="login-container">
 
-        <form method="POST" action="{{ url_for('login') }}">
-            <label for="role">Login as</label>
-            <select name="role" id="role" required>
-                <option value="">Select your role</option>
-                <option value="mentor">Mentor</option>
-                <option value="team">Team</option>
-            </select>
-
-            <label for="email">Email</label>
-            <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="Enter your email"
-                required
-            >
-
-            <label for="password">Password</label>
-            <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Enter your password"
-                required
-            >
-
-            <button type="submit">Login</button>
-        </form>
-
-        <div class="register-link">
-            Don't have an account?
-            <a href="{{ url_for('register') }}">Register here</a>
-        </div>
+    <div class="brand">
+      <div class="brand-icon">M</div>
+      MentorMeet
     </div>
+
+    <h1>Welcome back!</h1>
+
+    <p class="subtitle">
+      Sign in to manage your mentoring sessions and connect with your community.
+    </p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="messages" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}" id="login-form">
+
+      <div class="form-group">
+        <label for="role">Login as</label>
+
+        <select name="role" id="role" required>
+          <option value="">Select your role</option>
+          <option value="mentor">Mentor</option>
+          <option value="team">Student Team</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email address</label>
+
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="Enter your email"
+          autocomplete="email"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+
+        <div class="password-wrap">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            required
+          >
+
+          <button
+            type="button"
+            class="toggle-password"
+            data-target="password"
+            aria-label="Show password"
+          >Show</button>
+        </div>
+      </div>
+
+      <button type="submit" class="login-button" id="login-button">
+        Sign in →
+      </button>
+
+    </form>
+
+  </main>
+
+  <script>
+    document.querySelectorAll(".toggle-password").forEach(function(button) {
+      button.addEventListener("click", function() {
+        const input = document.getElementById(button.dataset.target);
+        const visible = input.type === "text";
+
+        input.type = visible ? "password" : "text";
+        button.textContent = visible ? "Show" : "Hide";
+        button.setAttribute(
+          "aria-label",
+          visible ? "Show password" : "Hide password"
+        );
+      });
+    });
+
+    document.getElementById("login-form").addEventListener("submit", function() {
+      const button = document.getElementById("login-button");
+      button.disabled = true;
+      button.textContent = "Signing in...";
+    });
+  </script>
+
 </body>
 </html>
-
