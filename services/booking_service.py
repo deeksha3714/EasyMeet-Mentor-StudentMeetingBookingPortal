@@ -16,7 +16,7 @@ from utils import query_all
 # Booking engine (mutual exclusion + atomicity)
 # =====================================================
 def book_slot(team_id, slot_id, reason):
-    """Returns (result, mentor_id). result: ok/taken/past/cancelled/not_found/error"""
+    """Returns (result, mentor_id). result: ok/taken/past/cancelled/not_found/already_booked/wrong_mentor/error"""
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -45,6 +45,25 @@ def book_slot(team_id, slot_id, reason):
         if slot["status"] != "available":
             conn.rollback()
             return "taken", slot["mentor_id"]
+
+        # Enforce assigned mentor:
+        cursor.execute("SELECT assigned_mentor_id FROM Team WHERE team_id = %s", (team_id,))
+        t_row = cursor.fetchone()
+        assigned_mentor_id = t_row["assigned_mentor_id"] if t_row else None
+        if assigned_mentor_id and slot["mentor_id"] != assigned_mentor_id:
+            conn.rollback()
+            return "wrong_mentor", slot["mentor_id"]
+
+        # Prevent booking multiple slots:
+        cursor.execute("""
+            SELECT 1 FROM Booking b
+            JOIN Slot s ON s.slot_id = b.slot_id
+            WHERE b.team_id = %s AND b.status = 'confirmed'
+              AND TIMESTAMP(s.date, s.start_time) > NOW()
+        """, (team_id,))
+        if cursor.fetchone():
+            conn.rollback()
+            return "already_booked", slot["mentor_id"]
 
         cursor.execute("""
             INSERT INTO Booking (team_id, mentor_id, slot_id, reason)
@@ -89,10 +108,19 @@ def cancel_booking(team_id, booking_id):
             return "past"
 
         # 2) re-check the booking now that we hold the lock
-        cursor.execute("""SELECT booking_id FROM Booking
-                          WHERE booking_id = %s AND team_id = %s AND status = 'confirmed'
-                          FOR UPDATE""", (booking_id, team_id))
-        if not cursor.fetchone():
+        cursor.execute("""
+            SELECT b.booking_id, b.mentor_id, t.team_name,
+                   DATE_FORMAT(s.date, %s) AS slot_date,
+                   TIME_FORMAT(s.start_time, %s) AS start_t,
+                   TIME_FORMAT(s.end_time, %s) AS end_t
+            FROM Booking b
+            JOIN Team t ON t.team_id = b.team_id
+            JOIN Slot s ON s.slot_id = b.slot_id
+            WHERE b.booking_id = %s AND b.team_id = %s AND b.status = 'confirmed'
+            FOR UPDATE
+        """, (D_FMT, T_FMT, T_FMT, booking_id, team_id))
+        booking_info = cursor.fetchone()
+        if not booking_info:
             conn.rollback()
             return "not_found"
 
@@ -117,6 +145,16 @@ def cancel_booking(team_id, booking_id):
             cursor.execute("DELETE FROM Booking WHERE booking_id = %s", (booking_id,))
             cursor.execute("UPDATE Slot SET status = 'available' WHERE slot_id = %s", (slot_id,))
             result = "freed"
+
+        # Send auto-generated message in inbox from mentor to the cancelling team
+        msg_text = (
+            f"Dear {booking_info['team_name']},\n\n"
+            f"Your booked slot on {booking_info['slot_date']} ({booking_info['start_t']} – {booking_info['end_t']}) has been cancelled."
+        )
+        cursor.execute("""
+            INSERT INTO Chat_Messages (team_id, mentor_id, sender, message_text, is_ai_draft)
+            VALUES (%s, %s, 'mentor', %s, FALSE)
+        """, (team_id, booking_info["mentor_id"], msg_text))
 
         conn.commit()
         return result
